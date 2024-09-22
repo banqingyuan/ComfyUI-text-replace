@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from .api.ocr_loc import web_image_ocr
 from .api.rectangle_merge import merge_rectangles, process_image_with_rectangles
+from PIL import Image
+from io import BytesIO
 
 class OCRLocNode:
     def __init__(self):
@@ -25,23 +27,14 @@ class OCRLocNode:
     CATEGORY = "Image Processing"
 
     def process_image(self, image, access_token):
-        # 将torch.tensor转换为numpy数组
-        image_np = (image.squeeze().permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8)
-        
-        # 检查图像尺寸并在必要时调整大小
-        max_dimension = 65000
-        height, width = image_np.shape[:2]
-        scale = 1.0
-        if height > max_dimension or width > max_dimension:
-            scale = max_dimension / max(height, width)
-            new_height = int(height * scale)
-            new_width = int(width * scale)
-            image_np = cv2.resize(image_np, (new_width, new_height), interpolation=cv2.INTER_AREA)
-            print(f"Image resized from {height}x{width} to {new_height}x{new_width}")
-        
-        # 将图像编码为JPEG格式
-        _, img_encoded = cv2.imencode('.jpg', image_np)
-        image_data = img_encoded.tobytes()
+        # 将torch.tensor转换为numpy数组，然后转为PIL Image
+        i = 255. * image.cpu().numpy()
+        img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8).squeeze())
+
+        # 将PIL Image转换为字节流
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        image_data = buffer.getvalue()
 
         # 调用OCR API
         ocr_result = web_image_ocr(image_data, access_token)
@@ -50,16 +43,19 @@ class OCRLocNode:
             print("OCR识别失败")
             return (image,)
 
-        # 收集所有矩形，并根据缩放比例调整坐标
+        # 收集所有矩形
         rectangles = []
         for word in ocr_result["words_result"]:
             loc = word["location"]
             rectangles.append([
-                int(loc['left'] / scale),
-                int(loc['top'] / scale),
-                int(loc['width'] / scale),
-                int(loc['height'] / scale)
+                loc['left'],
+                loc['top'],
+                loc['width'],
+                loc['height']
             ])
+
+        # 将PIL Image转换为numpy数组
+        image_np = np.array(img)
 
         # 处理图像
         processed_image = process_image_with_rectangles(image_np, rectangles)
