@@ -28,6 +28,17 @@ class OCRLocNode:
         # 将torch.tensor转换为numpy数组
         image_np = (image.squeeze().permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8)
         
+        # 检查图像尺寸并在必要时调整大小
+        max_dimension = 65000
+        height, width = image_np.shape[:2]
+        scale = 1.0
+        if height > max_dimension or width > max_dimension:
+            scale = max_dimension / max(height, width)
+            new_height = int(height * scale)
+            new_width = int(width * scale)
+            image_np = cv2.resize(image_np, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            print(f"Image resized from {height}x{width} to {new_height}x{new_width}")
+        
         # 将图像编码为JPEG格式
         _, img_encoded = cv2.imencode('.jpg', image_np)
         image_data = img_encoded.tobytes()
@@ -39,13 +50,17 @@ class OCRLocNode:
             print("OCR识别失败")
             return (image,)
 
-        # 收集所有矩形
+        # 收集所有矩形，并根据缩放比例调整坐标
         rectangles = []
         for word in ocr_result["words_result"]:
             loc = word["location"]
-            rectangles.append([loc['left'], loc['top'], loc['width'], loc['height']])
+            rectangles.append([
+                int(loc['left'] / scale),
+                int(loc['top'] / scale),
+                int(loc['width'] / scale),
+                int(loc['height'] / scale)
+            ])
 
-        print(f"Image shape: {image_np.shape}")
         # 处理图像
         processed_image = process_image_with_rectangles(image_np, rectangles)
 
