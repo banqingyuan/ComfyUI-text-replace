@@ -64,38 +64,22 @@ class OverlayText:
         return (pil2tensor(back_image),)
 
     def calculate_font_size(self, width, height, text, font_name):
-        max_font_size = min(width, height) // 2
-        font_size = max_font_size
-        font_path = os.path.join(font_dir, font_name)
+        char_count = len(text)
+        aspect_ratio = width / height
         
-        # 创建一个临时的 ImageDraw 对象来测量文本大小
-        temp_image = Image.new('RGB', (1, 1))
-        draw = ImageDraw.Draw(temp_image)
+        # 估算最佳行数
+        optimal_lines = max(1, int(((char_count / aspect_ratio) ** 0.5) / 2))
         
-        while font_size > 1:
-            font = ImageFont.truetype(font_path, size=font_size)
-            lines = []
-            current_line = ""
-            words = text.split()
-            
-            for word in words:
-                test_line = current_line + " " + word if current_line else word
-                bbox = draw.textbbox((0, 0), test_line, font=font)
-                if bbox[2] <= width * 0.9:
-                    current_line = test_line
-                else:
-                    lines.append(current_line)
-                    current_line = word
-            
-            if current_line:
-                lines.append(current_line)
-            
-            total_height = sum(draw.textbbox((0, 0), line, font=font)[3] for line in lines)
-            
-            if total_height <= height * 0.88 and len(lines) > 1:
-                break
-            
-            font_size -= 1
+        # 计算每行字符数
+        chars_per_line = max(1, char_count // optimal_lines)
+        
+        # 计算字体大小
+        font_size = min(width // chars_per_line, height // optimal_lines)
+        
+        # 分行
+        lines = []
+        for i in range(0, len(text), chars_per_line):
+            lines.append(text[i:i+chars_per_line])
         
         return font_size, "\n".join(lines)
 
