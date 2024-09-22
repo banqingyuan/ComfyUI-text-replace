@@ -5,17 +5,7 @@ from .api.rectangle_merge import process_image_with_rectangles, merge_rectangles
 from PIL import Image
 from io import BytesIO
 import json
-
-def tensor_to_pil(image: torch.Tensor) -> Image.Image:
-    """将torch.Tensor转换为PIL Image"""
-    if len(image.shape) == 4:
-        image = image.squeeze(0)
-    return Image.fromarray((image * 255).byte().cpu().numpy().astype(np.uint8))
-
-def pil_to_tensor(image: Image.Image) -> torch.Tensor:
-    """将PIL Image转换为torch.Tensor"""
-    np_image = np.array(image).astype(np.float32) / 255.0
-    return torch.from_numpy(np_image).unsqueeze(0)
+import util
 
 class OCRLocNode:
     def __init__(self):
@@ -39,7 +29,7 @@ class OCRLocNode:
     CATEGORY = "Image Processing"
 
     def process_image(self, image: torch.Tensor, access_token: str):
-        img_pil = tensor_to_pil(image)
+        img_pil = util.tensor_to_pil(image)
 
         buffer = BytesIO()
         img_pil.save(buffer, format="JPEG")
@@ -61,7 +51,7 @@ class OCRLocNode:
 
         processed_image, labeled_rectangles = process_image_with_rectangles(np.array(img_pil), merged_rectangles)
 
-        processed_tensor = pil_to_tensor(Image.fromarray(processed_image))
+        processed_tensor = util.pil_to_tensor(Image.fromarray(processed_image))
 
         merged_rectangles_json = json.dumps(labeled_rectangles)
         original_rectangles_json = json.dumps(original_rectangles)

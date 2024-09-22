@@ -2,7 +2,7 @@ import requests
 import base64
 import json
 
-def image_inpainting(image_data, rectangle, access_token):
+def image_inpainting(image_data, rectangle: list, access_token: str):
     """
     调用百度智能云图像修复接口
     
