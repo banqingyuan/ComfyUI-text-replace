@@ -29,29 +29,33 @@ def merge_rectangles(rectangles, vertical_threshold=10, overlap_threshold=0.5):
                 i += 1
     return merged
 
-def process_image_with_rectangles(image, rectangles):
+def process_image_with_rectangles(image, rectangles, min_area=100):
     merged_rectangles = merge_rectangles(rectangles)
     merged_rectangles.sort(key=lambda r: (r[1], r[0]))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.7  # 增大字体大小
-    font_thickness = 2  # 增加字体粗细
-    padding = 3  # 增加内边距
+    font_scale = 0.7
+    font_thickness = 2
+    padding = 3
 
     labeled_rectangles = []
+    label_counter = 1
 
-    for i, rect in enumerate(merged_rectangles, 1):
+    for rect in merged_rectangles:
         left, top, width, height = rect
-        cv2.rectangle(image, (left, top), (left + width, top + height), (0, 0, 255), 2)  # 红色，线条加粗
+        area = width * height
         
-        label = str(i)
+        if area < min_area:
+            continue  # 跳过小于最小面积的矩形
+
+        cv2.rectangle(image, (left, top), (left + width, top + height), (0, 0, 255), 2)
+        
+        label = str(label_counter)
         (label_width, label_height), _ = cv2.getTextSize(label, font, font_scale, font_thickness)
         
-        # 尝试将标签放在矩形内部的右下角
         label_x = left + width - label_width - padding
         label_y = top + height - padding
 
-        # 如果标签超出矩形范围，则调整位置
         if label_x < left + padding:
             label_x = left + padding
         if label_y - label_height < top + padding:
@@ -60,15 +64,17 @@ def process_image_with_rectangles(image, rectangles):
         cv2.rectangle(image, (label_x - padding, label_y - label_height - padding),
                       (label_x + label_width + padding, label_y + padding), (255, 255, 255), -1)
         
-        cv2.putText(image, label, (label_x, label_y), font, font_scale, (0, 0, 255), font_thickness)
+        cv2.putText(image, label, (label_x, label_y), font, font_scale, (255,0, 0), font_thickness)
 
         labeled_rectangles.append({
-            "id": i,
+            "id": label_counter,
             "left": left,
             "top": top,
             "width": width,
             "height": height
         })
+        
+        label_counter += 1
 
     return image, labeled_rectangles
 
