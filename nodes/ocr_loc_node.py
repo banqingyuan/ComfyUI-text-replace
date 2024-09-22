@@ -63,11 +63,11 @@ class OCRLocNode:
         # 处理图像
         processed_image = process_image_with_rectangles(image_np, rectangles)
 
-        # 将处理后的图像转换回torch.tensor，保持原始形状
+        # 将处理后的图像转换回torch.tensor
         processed_tensor = torch.from_numpy(processed_image).float() / 255.0
-        processed_tensor = processed_tensor.permute(2, 0, 1).unsqueeze(0)
 
         # 确保张量的形状与原始输入相同
-        processed_tensor = processed_tensor.view(original_shape)
+        processed_tensor = processed_tensor.permute(2, 0, 1).unsqueeze(0)
+        processed_tensor = processed_tensor.reshape(original_shape)
 
         return (processed_tensor,)
