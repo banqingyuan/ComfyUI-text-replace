@@ -54,7 +54,7 @@ class OverlayText:
                 text = texts[rect_id].strip()
                 if text:  # 添加对空字符串的跳过逻辑
                     # 计算适合矩形的字体大小
-                    font_size = self.calculate_font_size(rect['width'], rect['height'], text)
+                    font_size = self.calculate_font_size(rect['width'], rect['height'], text, font_name)
                     font = ImageFont.truetype(os.path.join(font_dir, font_name), font_size)
 
                     # 在矩形内绘制文本
@@ -63,9 +63,31 @@ class OverlayText:
         # 将PIL图像转换回torch tensor
         return (pil2tensor(back_image),)
 
-    def calculate_font_size(self, width, height, text):
-        # 这里可以实现更复杂的字体大小计算逻辑
-        return min(width // len(text), height) // 2
+    def calculate_font_size(self, width, height, text, font_name):
+        max_font_size = min(width, height) // 2
+        font_size = max_font_size
+        font_path = os.path.join(font_dir, font_name)
+        
+        # 创建一个临时的 ImageDraw 对象来测量文本大小
+        temp_image = Image.new('RGB', (1, 1))
+        draw = ImageDraw.Draw(temp_image)
+        
+        text_lines = text.split('\n')[:2]  # 只考虑前两行
+        
+        if len(text_lines) == 2:
+            font_size = min(height // 2, max_font_size)
+        
+        while font_size > 1:
+            font = ImageFont.truetype(font_path, size=font_size)
+            max_text_width = max(draw.textbbox((0, 0), line, font=font)[2] for line in text_lines)
+            text_height = sum(draw.textbbox((0, 0), line, font=font)[3] for line in text_lines)
+            
+            if max_text_width <= width * 0.9 and text_height <= height * 0.88:
+                break
+            
+            font_size -= 1
+        
+        return font_size
 
     def draw_text_in_rectangle(self, draw, rect, text, font, color):
         x, y = rect['left'], rect['top']
