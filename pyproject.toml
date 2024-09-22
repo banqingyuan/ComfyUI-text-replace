@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-text-replace"
+description = "NODES: OCR Location Node, Image Erase Node, Chat Overlay Node, Extract JSON Node."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["opencv-python", "numpy", "pytesseract", "Pillow", "requests", "torch"]
+
+[project.urls]
+Repository = "https://github.com/banqingyuan/ComfyUI-text-replace"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-text-replace"
+Icon = ""
