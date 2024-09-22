@@ -5,7 +5,7 @@ from .api.rectangle_merge import process_image_with_rectangles, merge_rectangles
 from PIL import Image
 from io import BytesIO
 import json
-import util
+import .util
 
 class OCRLocNode:
     def __init__(self):
