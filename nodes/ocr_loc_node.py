@@ -45,6 +45,7 @@ class OCRLocNode:
             loc = word["location"]
             rectangles.append([loc['left'], loc['top'], loc['width'], loc['height']])
 
+        print(f"Image shape: {image_np.shape}")
         # 处理图像
         processed_image = process_image_with_rectangles(image_np, rectangles)
 
