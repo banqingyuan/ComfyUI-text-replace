@@ -31,7 +31,7 @@ class OCRLocNode:
             image = image.squeeze(0)
 
         # 将torch.Tensor转换为PIL Image
-        img_pil = Image.fromarray((image * 255).byte().cpu().numpy(), mode='RGB')
+        img_pil = Image.fromarray((image * 255).byte().cpu().numpy().astype(np.uint8))
 
         # 将PIL Image转换为字节流
         buffer = BytesIO()
@@ -58,10 +58,7 @@ class OCRLocNode:
         # 将处理后的图像转换回torch.Tensor
         processed_tensor = torch.from_numpy(processed_image).float() / 255.0
 
-        # 确保张量的形状正确 (C, H, W)
-        processed_tensor = processed_tensor.permute(2, 0, 1)
-
-        # 添加批次维度
+        # 确保张量的形状正确 (B, H, W, C)
         processed_tensor = processed_tensor.unsqueeze(0)
 
         return (processed_tensor,)
