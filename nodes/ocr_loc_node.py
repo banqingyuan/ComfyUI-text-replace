@@ -44,6 +44,7 @@ class OCRLocNode:
         if "words_result" not in ocr_result:
             print("OCR识别失败")
             return (image.unsqueeze(0),)
+        
 
         # 收集所有矩形
         rectangles = [
