@@ -39,7 +39,7 @@ def process_image_with_rectangles(image, rectangles, min_area=200):
     padding = 3
 
     labeled_rectangles = []
-    label_counter = 1
+    label_counter = 0
 
     for rect in merged_rectangles:
         left, top, width, height = rect
@@ -50,7 +50,7 @@ def process_image_with_rectangles(image, rectangles, min_area=200):
 
         cv2.rectangle(image, (left, top), (left + width, top + height), (255, 0, 0), 2)
         
-        label = str(label_counter)
+        label = chr(65 + label_counter % 26)  # 使用A-Z循环
         (label_width, label_height), _ = cv2.getTextSize(label, font, font_scale, font_thickness)
         
         label_x = left + width - label_width - padding
@@ -64,10 +64,10 @@ def process_image_with_rectangles(image, rectangles, min_area=200):
         cv2.rectangle(image, (label_x - padding, label_y - label_height - padding),
                       (label_x + label_width + padding, label_y + padding), (255, 255, 255), -1)
         
-        cv2.putText(image, label, (label_x, label_y), font, font_scale, (255,0, 0), font_thickness)
+        cv2.putText(image, label, (label_x, label_y), font, font_scale, (0, 0, 255), font_thickness)
 
         labeled_rectangles.append({
-            "id": label_counter,
+            "id": label,
             "left": left,
             "top": top,
             "width": width,
