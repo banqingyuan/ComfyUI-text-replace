@@ -34,29 +34,29 @@ def process_image_with_rectangles(image, rectangles):
     merged_rectangles.sort(key=lambda r: (r[1], r[0]))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.5
-    font_thickness = 1
-    padding = 2
+    font_scale = 0.7  # 增大字体大小
+    font_thickness = 2  # 增加字体粗细
+    padding = 3  # 增加内边距
 
     labeled_rectangles = []
 
     for i, rect in enumerate(merged_rectangles, 1):
         left, top, width, height = rect
-        cv2.rectangle(image, (left, top), (left + width, top + height), (0, 0, 255), 1)
+        cv2.rectangle(image, (left, top), (left + width, top + height), (0, 0, 255), 2)  # 红色，线条加粗
         
         label = str(i)
         (label_width, label_height), _ = cv2.getTextSize(label, font, font_scale, font_thickness)
         
-        label_x = max(left, padding)
-        label_y = max(top - padding, label_height + padding)
-        
-        if label_x + label_width > left + width or label_y - label_height < top:
-            label_x = min(left + width - label_width - padding, image.shape[1] - label_width - padding)
-            label_y = max(top - padding, label_height + padding)
-        
-        if label_y - label_height < top:
-            label_y = min(top + height + label_height + padding, image.shape[0] - padding)
-        
+        # 尝试将标签放在矩形内部的右下角
+        label_x = left + width - label_width - padding
+        label_y = top + height - padding
+
+        # 如果标签超出矩形范围，则调整位置
+        if label_x < left + padding:
+            label_x = left + padding
+        if label_y - label_height < top + padding:
+            label_y = top + label_height + padding
+
         cv2.rectangle(image, (label_x - padding, label_y - label_height - padding),
                       (label_x + label_width + padding, label_y + padding), (255, 255, 255), -1)
         
