@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# 虚拟环境
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+
+# 数据库
+*.db
+*.sqlite3
+
+# 配置文件
+config.ini
+secrets.json
+
+# 依赖管理
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 构建输出
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 测试覆盖率报告
+htmlcov/
+.coverage
+.coverage.*
+.cache
+
+# 其他
+*.csv
+*.json
+*.pkl
