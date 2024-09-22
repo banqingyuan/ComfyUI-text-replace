@@ -1,4 +1,4 @@
-from ocr_loc_node import OCRLocNode
+from .nodes.ocr_loc_node import *
 
 NODE_CLASS_MAPPINGS = {
     "OCRLocNode": OCRLocNode
