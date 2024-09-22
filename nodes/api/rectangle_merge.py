@@ -38,6 +38,8 @@ def process_image_with_rectangles(image, rectangles):
     font_thickness = 1
     padding = 2
 
+    labeled_rectangles = []
+
     for i, rect in enumerate(merged_rectangles, 1):
         left, top, width, height = rect
         cv2.rectangle(image, (left, top), (left + width, top + height), (0, 0, 255), 1)
@@ -60,5 +62,13 @@ def process_image_with_rectangles(image, rectangles):
         
         cv2.putText(image, label, (label_x, label_y), font, font_scale, (0, 0, 255), font_thickness)
 
-    return image
+        labeled_rectangles.append({
+            "id": i,
+            "left": left,
+            "top": top,
+            "width": width,
+            "height": height
+        })
+
+    return image, labeled_rectangles
 

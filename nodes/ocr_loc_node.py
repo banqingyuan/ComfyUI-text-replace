@@ -1,9 +1,10 @@
 import torch
 import numpy as np
 from .api.ocr_loc import web_image_ocr
-from .api.rectangle_merge import process_image_with_rectangles
+from .api.rectangle_merge import process_image_with_rectangles, merge_rectangles
 from PIL import Image
 from io import BytesIO
+import json
 
 def tensor_to_pil(image: torch.Tensor) -> Image.Image:
     """将torch.Tensor转换为PIL Image"""
@@ -32,37 +33,37 @@ class OCRLocNode:
             },
         }
 
-    RETURN_TYPES = ("IMAGE",)
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING")
+    RETURN_NAMES = ("image", "merged_rectangles", "original_rectangles")
     FUNCTION = "process_image"
     CATEGORY = "Image Processing"
 
     def process_image(self, image: torch.Tensor, access_token: str):
-        # 将torch.Tensor转换为PIL Image
         img_pil = tensor_to_pil(image)
 
-        # 将PIL Image转换为字节流
         buffer = BytesIO()
         img_pil.save(buffer, format="JPEG")
         image_data = buffer.getvalue()
 
-        # 调用OCR API
         ocr_result = web_image_ocr(image_data, access_token)
 
         if "words_result" not in ocr_result:
             print("OCR识别失败")
-            return (image,)
+            return (image, json.dumps([]), json.dumps([]))
 
-        # 收集所有矩形
-        rectangles = [
+        original_rectangles = [
             [word["location"]["left"], word["location"]["top"], 
              word["location"]["width"], word["location"]["height"]]
             for word in ocr_result["words_result"]
         ]
 
-        # 处理图像
-        processed_image = process_image_with_rectangles(np.array(img_pil), rectangles)
+        merged_rectangles = merge_rectangles(original_rectangles.copy())
 
-        # 将处理后的图像转换回torch.Tensor
+        processed_image, labeled_rectangles = process_image_with_rectangles(np.array(img_pil), merged_rectangles)
+
         processed_tensor = pil_to_tensor(Image.fromarray(processed_image))
 
-        return (processed_tensor,)
+        merged_rectangles_json = json.dumps(labeled_rectangles)
+        original_rectangles_json = json.dumps(original_rectangles)
+
+        return (processed_tensor, merged_rectangles_json, original_rectangles_json)
