@@ -29,15 +29,26 @@ class ImageEraseNode:
     FUNCTION = "erase_image"
     CATEGORY = "Image Processing"
 
-    def erase_image(self, image: torch.Tensor, rectangles: str, access_token: str):
+    def erase_image(self, image: torch.Tensor, rectangles: str, expand_pixels: int, access_token: str):
         # 将输入的字符串转换为列表
         rectangles = json.loads(rectangles)
 
-        # 将rectangles转换为image_inpainting所需的格式
-        formatted_rectangles = [
-            {'width': rect[2], 'top': rect[1], 'height': rect[3], 'left': rect[0]}
-            for rect in rectangles
-        ]
+        # 获取图像尺寸
+        height, width = image.shape[1:3]
+
+        # 扩展矩形并处理边界情况
+        expanded_rectangles = []
+        for rect in rectangles:
+            left = max(0, rect[0] - expand_pixels)
+            top = max(0, rect[1] - expand_pixels)
+            right = min(width, rect[0] + rect[2] + expand_pixels)
+            bottom = min(height, rect[1] + rect[3] + expand_pixels)
+            expanded_rectangles.append({
+                'left': left,
+                'top': top,
+                'width': right - left,
+                'height': bottom - top
+            })
 
         # 将torch tensor转换为PIL图像
         img_pil = tensor_to_pil(image)
@@ -46,7 +57,7 @@ class ImageEraseNode:
         img_byte_arr = pil_to_bytes(img_pil)
 
         # 调用image_inpainting函数进行图像修复
-        result = image_inpainting(img_byte_arr, formatted_rectangles, access_token)
+        result = image_inpainting(img_byte_arr, expanded_rectangles, access_token)
 
         if result:
             # 将base64编码的结果转换回PIL图像
