@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 import json
 from .api.text_erase import image_inpainting
-import util
+from .util import *
 
 class ImageEraseNode:
     def __init__(self):
@@ -40,19 +40,19 @@ class ImageEraseNode:
         ]
 
         # 将torch tensor转换为PIL图像
-        img_pil = util.tensor_to_pil(image)
+        img_pil = tensor_to_pil(image)
 
         # 将PIL图像转换为字节
-        img_byte_arr = util.pil_to_bytes(img_pil)
+        img_byte_arr = pil_to_bytes(img_pil)
 
         # 调用image_inpainting函数进行图像修复
         result = image_inpainting(img_byte_arr, formatted_rectangles, access_token)
 
         if result:
             # 将base64编码的结果转换回PIL图像
-            erased_img = util.base64_to_pil(result)
+            erased_img = base64_to_pil(result)
             # 将PIL图像转换回torch tensor
-            erased_tensor = util.pil_to_tensor(erased_img)
+            erased_tensor = pil_to_tensor(erased_img)
             return (erased_tensor,)
         else:
             print("图像擦除失败")
