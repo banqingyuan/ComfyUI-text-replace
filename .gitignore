@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *.so
 
+nodes/image_showcase.py
+
 # 虚拟环境
 .venv/
 env/
