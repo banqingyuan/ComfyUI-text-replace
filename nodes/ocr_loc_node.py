@@ -60,8 +60,16 @@ class OCRLocNode:
         # 处理图像
         processed_image = process_image_with_rectangles(image_np, rectangles)
 
+        # 确保处理后的图像是3通道的
+        if len(processed_image.shape) == 2:
+            processed_image = np.stack([processed_image] * 3, axis=-1)
+
         # 将处理后的图像转换回torch.tensor
         processed_tensor = torch.from_numpy(processed_image).float() / 255.0
         processed_tensor = processed_tensor.permute(2, 0, 1).unsqueeze(0)
+
+        # 确保张量的形状是 (1, 3, H, W)
+        if processed_tensor.shape[1] != 3:
+            processed_tensor = processed_tensor.repeat(1, 3, 1, 1)
 
         return (processed_tensor,)
