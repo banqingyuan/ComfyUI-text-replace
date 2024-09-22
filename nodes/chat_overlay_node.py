@@ -65,16 +65,23 @@ class OverlayText:
 
     def calculate_font_size(self, width, height, text, font_name):
         char_count = len(text)
-        aspect_ratio = width / height
+        rect_area = width * height
+        char_area = rect_area / char_count
         
-        # 估算最佳行数
-        optimal_lines = max(1, int(((char_count / aspect_ratio) ** 0.5) / 2))
+        # 假设字体是正方形的，计算字体大小
+        font_size = int((char_area ** 0.5) * 0.8)  # 使用0.8作为缩放因子，留出一些边距
         
-        # 计算每行字符数
-        chars_per_line = max(1, char_count // optimal_lines)
+        # 估算每行能容纳的字符数
+        chars_per_line = max(1, int(width / font_size))
         
-        # 计算字体大小
-        font_size = min(width // chars_per_line, height // optimal_lines)
+        # 计算行数
+        num_lines = max(1, char_count // chars_per_line)
+        
+        # 如果行数过多，减小字体大小
+        while num_lines * font_size > height:
+            font_size -= 1
+            chars_per_line = max(1, int(width / font_size))
+            num_lines = max(1, char_count // chars_per_line)
         
         # 分行
         lines = []
