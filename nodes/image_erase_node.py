@@ -18,6 +18,12 @@ class ImageEraseNode:
                     "multiline": True,
                     "default": "[[0, 0, 100, 100]]"
                 }),
+                "expand_pixels": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 100,
+                    "step": 1,
+                }),
                 "access_token": ("STRING", {
                     "multiline": False,
                     "default": "请输入您的百度AI平台access token"
