@@ -29,7 +29,7 @@ def merge_rectangles(rectangles, vertical_threshold=10, overlap_threshold=0.5):
                 i += 1
     return merged
 
-def process_image_with_rectangles(image, rectangles, min_area=100):
+def process_image_with_rectangles(image, rectangles, min_area=200):
     merged_rectangles = merge_rectangles(rectangles)
     merged_rectangles.sort(key=lambda r: (r[1], r[0]))
 
@@ -48,7 +48,7 @@ def process_image_with_rectangles(image, rectangles, min_area=100):
         if area < min_area:
             continue  # 跳过小于最小面积的矩形
 
-        cv2.rectangle(image, (left, top), (left + width, top + height), (0, 0, 255), 2)
+        cv2.rectangle(image, (left, top), (left + width, top + height), (255, 0, 0), 2)
         
         label = str(label_counter)
         (label_width, label_height), _ = cv2.getTextSize(label, font, font_scale, font_thickness)
