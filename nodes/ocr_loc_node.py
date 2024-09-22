@@ -1,8 +1,8 @@
 import torch
 import cv2
 import numpy as np
-from api.ocr_loc import web_image_ocr
-from api.rectangle_merge import merge_rectangles, process_image_with_rectangles
+from .api.ocr_loc import web_image_ocr
+from .api.rectangle_merge import merge_rectangles, process_image_with_rectangles
 
 class OCRLocNode:
     def __init__(self):
