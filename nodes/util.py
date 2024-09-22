@@ -30,7 +30,7 @@ def pil_to_bytes(image: Image.Image, format: str = 'JPEG') -> bytes:
     image.save(buffer, format=format)
     return buffer.getvalue()
 
-font_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "fonts")
+font_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fonts")
 file_list = [f for f in os.listdir(font_dir) if os.path.isfile(os.path.join(font_dir, f)) and f.lower().endswith(".ttf")]
 
 
