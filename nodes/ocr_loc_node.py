@@ -5,6 +5,17 @@ from .api.rectangle_merge import process_image_with_rectangles
 from PIL import Image
 from io import BytesIO
 
+def tensor_to_pil(image: torch.Tensor) -> Image.Image:
+    """将torch.Tensor转换为PIL Image"""
+    if len(image.shape) == 4:
+        image = image.squeeze(0)
+    return Image.fromarray((image * 255).byte().cpu().numpy().astype(np.uint8))
+
+def pil_to_tensor(image: Image.Image) -> torch.Tensor:
+    """将PIL Image转换为torch.Tensor"""
+    np_image = np.array(image).astype(np.float32) / 255.0
+    return torch.from_numpy(np_image).unsqueeze(0)
+
 class OCRLocNode:
     def __init__(self):
         pass
@@ -26,12 +37,8 @@ class OCRLocNode:
     CATEGORY = "Image Processing"
 
     def process_image(self, image: torch.Tensor, access_token: str):
-        # 确保输入是单张图像
-        if len(image.shape) == 4:
-            image = image.squeeze(0)
-
         # 将torch.Tensor转换为PIL Image
-        img_pil = Image.fromarray((image * 255).byte().cpu().numpy().astype(np.uint8))
+        img_pil = tensor_to_pil(image)
 
         # 将PIL Image转换为字节流
         buffer = BytesIO()
@@ -43,8 +50,7 @@ class OCRLocNode:
 
         if "words_result" not in ocr_result:
             print("OCR识别失败")
-            return (image.unsqueeze(0),)
-        
+            return (image,)
 
         # 收集所有矩形
         rectangles = [
@@ -57,9 +63,6 @@ class OCRLocNode:
         processed_image = process_image_with_rectangles(np.array(img_pil), rectangles)
 
         # 将处理后的图像转换回torch.Tensor
-        processed_tensor = torch.from_numpy(processed_image).float() / 255.0
-
-        # 确保张量的形状正确 (B, H, W, C)
-        processed_tensor = processed_tensor.unsqueeze(0)
+        processed_tensor = pil_to_tensor(Image.fromarray(processed_image))
 
         return (processed_tensor,)
