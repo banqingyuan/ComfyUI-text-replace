@@ -72,7 +72,9 @@ class OverlayText:
         w, h = rect['width'], rect['height']
         
         # 获取文本大小
-        text_width, text_height = draw.textsize(text, font=font)
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
         
         # 计算文本位置（居中）
         text_x = x + (w - text_width) / 2
